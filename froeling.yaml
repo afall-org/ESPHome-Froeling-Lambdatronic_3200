@@ -1,5 +1,6 @@
 esphome:
-  name: froeling # If you're intending to use the Dashboard provided in this Repo - DO NOT CHANGE THE NAME -> readme.md
+  name: froeling
+  friendly_name: froeling
 
 esp32:
   board: wemos_d1_mini32
@@ -12,15 +13,24 @@ logger:
 # Enable Home Assistant API
 api:
   encryption:
-    key: ""
+    key: "byjYPCnsnixM/TaLHxr8XaMbLoQOuNzJPsH85uOHNu8="
 
 ota:
   - platform: esphome
-    password: ""
+    password: "9c0b1bfedbc9a9654240982f376e3e79"
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  manual_ip:
+    static_ip: 192.168.0.240
+    gateway: 0.0.0.0
+    subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  #ap:
+  #  ssid: "Froeling Fallback Hotspot"
+  #  password: "jMWLCgnjzVBQ"
 
 web_server:
   port: 80
@@ -56,17 +66,17 @@ switch:
 
 packages:
   remote_package:
-    url: https://github.com/GyroGearl00se/ESPHome-Froeling-Lambdatronic_3200
+    url: https://github.com/afall-org/ESPHome-Froeling-Lambdatronic_3200
     ref: main
     files: [
       austragung.yaml,
       boiler_01.yaml,
-      heizkreis01.yaml,
+#      heizkreis01.yaml,
       heizkreis02.yaml,
       kessel.yaml,
       puffer_01.yaml,
-      zirkulationspumpe.yaml,
-      solarthermie.yaml,
+#      solarthermie.yaml,
+#      zirkulationspumpe.yaml,
       ]
 
     refresh: 1d
@@ -84,6 +94,14 @@ sensor:
     value_type: S_WORD
     filters:
       - multiply: 0.5
+
+  - platform: modbus_controller
+    modbus_controller_id: ${modbus_controller_id}
+    name: "${name} Fehlercode1"
+    id: ${name}_Fehlercode1
+    register_type: read
+    address: 3000
+    value_type: U_WORD
 
 number:
   - platform: modbus_controller
@@ -226,5 +244,450 @@ text_sensor:
         case 81: return std::string("SH Störung");
         case 82: return std::string("Sensorcheck");
         default: return std::string("----");
+      }
+      return x;
+      
+  - platform: modbus_controller
+    modbus_controller_id: ${modbus_controller_id}
+    name: "${name} Fehler1"
+    id: ${name}_Fehler1
+    register_type: read
+    address: 3000
+    raw_encode: HEXBYTES
+    lambda: |-
+      uint16_t value = modbus_controller::word_from_hex_str(x, 0);
+      switch (value) {
+        case 65535: return std::string("Kein Fehler");
+        case 0: return std::string("STB gefallen oder NOT-AUS betätigt");
+        case 1: return std::string("Kesseltemperaturfühler fehlerhaft");
+        case 2: return std::string("Primärluftklappe blockiert");
+        case 3: return std::string("Sekundärluftklappe blockiert");
+        case 4: return std::string("Kessel zieht zu viel Falschluft");
+        case 5: return std::string("Kontrolle von Feuerraum- Überdruckwächter durchführen");
+        case 6: return std::string("Rückbrandschieber schließt nicht");
+        case 7: return std::string("Rückbrandschieber öffnet nicht");
+        case 8: return std::string("Rostantrieb defekt");
+        case 9: return std::string("Rost Fehler");
+        case 10: return std::string("Rostreinigung fehlerhaft");
+        case 11: return std::string("Zündversuch ist nicht gelungen");
+        case 12: return std::string("Sicherheitszeit abgelaufen Sauerstoffgehalt zu lange zu hoch");
+        case 13: return std::string("Sicherheitszeit abgelaufen Abgastemperatur zu lange zu niedrig");
+        case 14: return std::string("Kesseltür zu lange offen");
+        case 15: return std::string("Stopfsensor für länger als 5min belegt");
+        case 16: return std::string("Raumaustragung kontrollieren");
+        case 17: return std::string("Lagerraum kontrollieren");
+        case 18: return std::string("Rücklauftemperaturfühler fehlerhaft");
+        case 19: return std::string("Rücklauftemperatur seit mehr als 30 Minuten zu niedrig");
+        case 20: return std::string("Fernversteller Heizkreis 1 fehlerhaft");
+        case 21: return std::string("Vorlauftemperaturfühler Heizkreis 1 fehlerhaft");
+        case 22: return std::string("Fernversteller Heizkreis 2 fehlerhaft");
+        case 23: return std::string("Vorlauftemperaturfühler Heizkreis 2 fehlerhaft");
+        case 24: return std::string("Außentemperaturfühler fehlerhaft");
+        case 25: return std::string("NOT-AUS Kontakt wurde betätigt");
+        case 26: return std::string("Fernversteller Heizkreis 3 fehlerhaft");
+        case 27: return std::string("Fernversteller Heizkreis 4 fehlerhaft");
+        case 28: return std::string("Fernversteller Heizkreis 5 fehlerhaft");
+        case 29: return std::string("Fernversteller Heizkreis 6 fehlerhaft");
+        case 30: return std::string("Fernversteller Heizkreis 7 fehlerhaft");
+        case 31: return std::string("Fernversteller Heizkreis 8 fehlerhaft");
+        case 32: return std::string("Fernversteller Heizkreis 9 fehlerhaft");
+        case 33: return std::string("Fernversteller Heizkreis 10 fehlerhaft");
+        case 34: return std::string("Fernversteller Heizkreis 11 fehlerhaft");
+        case 35: return std::string("Fernversteller Heizkreis 12 fehlerhaft");
+        case 36: return std::string("Fernversteller Heizkreis 13 fehlerhaft");
+        case 37: return std::string("Fernversteller Heizkreis 14 fehlerhaft");
+        case 38: return std::string("Fernversteller Heizkreis 15 fehlerhaft");
+        case 39: return std::string("Fernversteller Heizkreis 16 fehlerhaft");
+        case 40: return std::string("Fernversteller Heizkreis 17 fehlerhaft");
+        case 41: return std::string("Fernversteller Heizkreis 18 fehlerhaft");
+        case 42: return std::string("Vorlauftemperaturfühler Heizkreis 3 fehlerhaft");
+        case 43: return std::string("Vorlauftemperaturfühler Heizkreis 4 fehlerhaft");
+        case 44: return std::string("Vorlauftemperaturfühler Heizkreis 5 fehlerhaft");
+        case 45: return std::string("Vorlauftemperaturfühler Heizkreis 6 fehlerhaft");
+        case 46: return std::string("Vorlauftemperaturfühler Heizkreis 7 fehlerhaft");
+        case 47: return std::string("Vorlauftemperaturfühler Heizkreis 8 fehlerhaft");
+        case 48: return std::string("Vorlauftemperaturfühler Heizkreis 9 fehlerhaft");
+        case 49: return std::string("Vorlauftemperaturfühler Heizkreis 10 fehlerhaft");
+        case 50: return std::string("Vorlauftemperaturfühler Heizkreis 11 fehlerhaft");
+        case 51: return std::string("Vorlauftemperaturfühler Heizkreis 12 fehlerhaft");
+        case 52: return std::string("Vorlauftemperaturfühler Heizkreis 13 fehlerhaft");
+        case 53: return std::string("Vorlauftemperaturfühler Heizkreis 14 fehlerhaft");
+        case 54: return std::string("Vorlauftemperaturfühler Heizkreis 15 fehlerhaft");
+        case 55: return std::string("Vorlauftemperaturfühler Heizkreis 16 fehlerhaft");
+        case 56: return std::string("Vorlauftemperaturfühler Heizkreis 17 fehlerhaft");
+        case 57: return std::string("Vorlauftemperaturfühler Heizkreis 18 fehlerhaft");
+        case 58: return std::string("Vor dem Stromausfall ist ein Busmodul ausgefallen");
+        case 59: return std::string("Saugzug dreht sich nicht, trotz voller Ansteuerung");
+        case 60: return std::string("Fühler im Boiler 01 fehlerhaft");
+        case 61: return std::string("Kommunikation zum Pelletsmodul fehlerhaft");
+        case 62: return std::string("");
+        case 63: return std::string("001 EEPROM Lesefehler");
+        case 64: return std::string("002 EEPROM Prüfsumme Null");
+        case 65: return std::string("003 EEPROM Lesefehler");
+        case 66: return std::string("004 EEPROM SW-Version falsch");
+        case 67: return std::string("005 EEPROM Parameterlänge falsch");
+        case 68: return std::string("006 EEPROM Lesefehler");
+        case 69: return std::string("007 EEPROM Prüfsumme falsch");
+        case 70: return std::string("008 EEPROM Schreibfehler");
+        case 71: return std::string("009 EEPROM Schreibfehler");
+        case 72: return std::string("010 Konfig. Listenfehler");
+        case 73: return std::string("Fühler im Boiler 02 fehlerhaft");
+        case 74: return std::string("Fühler im Boiler 03 fehlerhaft");
+        case 75: return std::string("Fühler im Boiler 04 fehlerhaft");
+        case 76: return std::string("Fühler im Boiler 05 fehlerhaft");
+        case 77: return std::string("Fühler im Boiler 06 fehlerhaft");
+        case 78: return std::string("Fühler im Boiler 07 fehlerhaft");
+        case 79: return std::string("Fühler im Boiler 08 fehlerhaft");
+        case 80: return std::string("Fühler Solarreferenz im Boiler 01 fehlerhaft");
+        case 81: return std::string("Fühler Solarreferenz im Boiler 02 fehlerhaft");
+        case 82: return std::string("Fühler Solarreferenz im Boiler 03 fehlerhaft");
+        case 83: return std::string("Fühler Solarreferenz im Boiler 04 fehlerhaft");
+        case 84: return std::string("Fühler Solarreferenz im Boiler 05 fehlerhaft");
+        case 85: return std::string("Fühler Solarreferenz im Boiler 06 fehlerhaft");
+        case 86: return std::string("Fühler Solarreferenz im Boiler 07 fehlerhaft");
+        case 87: return std::string("Fühler Solarreferenz im Boiler 08 fehlerhaft");
+        case 88: return std::string("Fühler oben im Puffer 1 fehlerhaft");
+        case 89: return std::string("Fühler oben im Puffer 2 fehlerhaft");
+        case 90: return std::string("Fühler oben im Puffer 3 fehlerhaft");
+        case 91: return std::string("Fühler oben im Puffer 4 fehlerhaft");
+        case 92: return std::string("Fühler Mitte im Puffer 1 fehlerhaft");
+        case 93: return std::string("Fühler Mitte im Puffer 2 fehlerhaft");
+        case 94: return std::string("Fühler Mitte im Puffer 3 fehlerhaft");
+        case 95: return std::string("Fühler Mitte im Puffer 4 fehlerhaft");
+        case 96: return std::string("Fühler unten im Puffer 1 fehlerhaft");
+        case 97: return std::string("Fühler unten im Puffer 2 fehlerhaft");
+        case 98: return std::string("Fühler unten im Puffer 3 fehlerhaft");
+        case 99: return std::string("Fühler unten im Puffer 4 fehlerhaft");
+        case 100: return std::string("Fühler im Zweitkessel fehlerhaft");
+        case 101: return std::string("Kollektor-Überhitzung oder Kollektorfühler unterbrochen");
+        case 102: return std::string("Fühler im Zusatzkessel fehlerhaft");
+        case 103: return std::string("Der Füllstand kann nicht richtig interpretiert werden");
+        case 104: return std::string("Die Bypassklappe konnte nicht öffnen");
+        case 105: return std::string("Die Bypassklappe konnte nicht geschlossen werden");
+        case 106: return std::string("Die Laufzeit zum Füllen wurde überschritten");
+        case 107: return std::string("Die Austragsschnecke stopft an der Saugstelle");
+        case 108: return std::string("Die Bypassklappe konnte weder öffnen noch schließen");
+        case 109: return std::string("Zündversuch nicht gelungen von Hand Anheizen!");
+        case 110: return std::string("Motorschutzschalter Saugzug gefallen");
+        case 111: return std::string("Motorschutzschalter Stoker gefallen");
+        case 112: return std::string("Motorschutzschalter Förderschnecke gefallen");
+        case 113: return std::string("Rückbrandklappe öffnet zu schnell");
+        case 114: return std::string("Rückbrandklappe schließt zu schnell");
+        case 115: return std::string("Keine/Beide Endlagen der Rückbrandklappe aktiv");
+        case 116: return std::string("Motorschutzschalter Zellradschleuse gefallen");
+        case 117: return std::string("Lambdasonde defekt");
+        case 118: return std::string("Abgastemperaturfühler defekt");
+        case 119: return std::string("Feuerraumtemperaturfühler defekt");
+        case 120: return std::string("LS im Fallschacht defekt");
+        case 121: return std::string("Fallschachtdeckel offen");
+        case 122: return std::string("Kesseltür zu lange offen oder Unterdruckmessdose defekt");
+        case 123: return std::string("Rost öffnet nicht");
+        case 124: return std::string("Sicherheitszeit wegen Füllstandsensor im Saugzyklon abgelaufen.");
+        case 125: return std::string("Motorschutz der Austragsschnecke gefallen");
+        case 126: return std::string("Stoker hat zu wenig Material");
+        case 127: return std::string("Austragsschnecke Fehler");
+        case 128: return std::string("GEFÄHRLICHER Zustand möglich");
+        case 129: return std::string("Hackgutmodul ausgefallen -> Sofortabschaltung");
+        case 130: return std::string("Saugmodul ausgefallen \n-> Sofortabschaltung");
+        case 131: return std::string("Brennstoff lt. Anleitung einlegen");
+        case 132: return std::string("RL Fühler für Netzpumpe fehlerhaft");
+        case 133: return std::string("LS im Fallschacht der Austragsschnecke defekt (Voll)");
+        case 134: return std::string("Fallschachtdeckel der Austragsschnecke offen");
+        case 135: return std::string("Motorschutzschalter Austragsschnecke gefallen");
+        case 136: return std::string("LS im Fallschacht der Zwischenschnecke 1 defekt (Voll)");
+        case 137: return std::string("Fallschachtdeckel der Zwischenschnecke 1 offen");
+        case 138: return std::string("Motorschutzschalter der Zwischenschnecke 1 gefallen");
+        case 139: return std::string("Brenner reinigen und kontrollieren");
+        case 140: return std::string("Rost schließt nicht");
+        case 141: return std::string("Rückbrandklappe schließt nicht");
+        case 142: return std::string("Rückbrandklappe öffnet nicht");
+        case 143: return std::string("Zu oft Überstrom Zellradschleuse");
+        case 144: return std::string("Zu oft Überstrom Stokerschnecke");
+        case 145: return std::string("Zu oft Überstrom Förderschnecke");
+        case 146: return std::string("Steuerung neu gestartet");
+        case 147: return std::string("Rücklauffühler für Verteiler 1 fehlerhaft");
+        case 148: return std::string("Rücklauffühler für Verteiler 2 fehlerhaft");
+        case 149: return std::string("Rücklauffühler für Verteiler 3 fehlerhaft");
+        case 150: return std::string("Rücklauffühler für Verteiler 4 fehlerhaft");
+        case 151: return std::string("maximaler Einschub nach Änderung neu berechnet und begrenzt");
+        case 152: return std::string("LS im Fallschacht der Zwischenschnecke 1 defekt (Leer)");
+        case 153: return std::string("LS im Fallschacht der Austragsschnecke defekt (Leer)");
+        case 154: return std::string("Absperrschieber blockiert");
+        case 155: return std::string("Fehler Kessel und Brennstoffauswahl");
+        case 156: return std::string("Kesselüberprüfung im Vorbereiten fehlerhaft");
+        case 157: return std::string("Kesselundichtheit festgestellt aufgrund Einschuberkennung");
+        case 158: return std::string("Kesselundichtheit festgestellt aufgrund O2 Überwachung");
+        case 159: return std::string("Fühler für Zirkulationspumpe fehlerhaft");
+        case 160: return std::string("Fühler für Solar WT sek. Vorlauf fehlerhaft");
+        case 161: return std::string("Fühler für Solar Kollektor Rücklauf fehlerhaft");
+        case 162: return std::string("Lambdasonde defekt");
+        case 163: return std::string("Fehlerbehebung wurde abgebrochen");
+        case 164: return std::string("Wärmequellen Fühler des Differenzregler defekt");
+        case 165: return std::string("Wärmesenken Fühler des Differenzregler defekt");
+        case 166: return std::string("Variante 3, es wurde ein Puffer und ein Verteiler mit der selben Nummer aktiviert");
+        case 167: return std::string("Sondenumschaltung aufgrund Pelletsmangel oder Stopfsensor");
+        case 168: return std::string("Vorratsbehälter leer, bitte Pellets Nachfüllen");
+        case 169: return std::string("Aschebox voll, bitte entleeren");
+        case 170: return std::string("Rostantrieb hat Überstrom, bitte 5 min warten");
+        case 171: return std::string("Fühler 1 fehlerhaft");
+        case 172: return std::string("Puffer Solarreferenz Fühler Fehlerhaft");
+        case 173: return std::string("Aschebox voll, bitte entleeren");
+        case 174: return std::string("Stokermotor nicht angesteckt oder funktioniert nicht");
+        case 175: return std::string("Breitbandsonde nicht angesteckt oder Heizung der Sonde defekt");
+        case 176: return std::string("Sensorelement der Breitbandsonde Fehlerhaft oder Kurzschluss");
+        case 177: return std::string("Stokermotor nicht angesteckt oder funktioniert nicht");
+        case 178: return std::string("Förderschnecke nicht angesteckt oder funktioniert nicht");
+        case 179: return std::string("Aschebox zu lange offen, bzw. entfernt");
+        case 180: return std::string("Unterdruck im VORBEREITEN zu gering");
+        case 181: return std::string("Luftklappe blockiert");
+        case 182: return std::string("Rücklaufanhebung und Boiler mittels HKP0 ist nicht möglich (gleicher Fühler)");
+        case 183: return std::string("Frequenzumformer fehlerhaft");
+        case 184: return std::string("Temperaturüberwachung des Saugzuges hat angesprochen (Klixon)");
+        case 185: return std::string("linker Teil des Rostes schließt nicht");
+        case 186: return std::string("rechter Teil des Rostes schließt nicht");
+        case 187: return std::string("linker Teil des Rostes öffnet nicht");
+        case 188: return std::string("rechter Teil des Rostes öffnet nicht");
+        case 189: return std::string("Motorschutz des VBL hat angesprochen");
+        case 190: return std::string("Motorschutz der Kesselladepumpe hat angesprochen");
+        case 191: return std::string("Zu oft Überstrom Austragschnecke");
+        case 192: return std::string("Zu oft Überstrom Zwischenschnecke");
+        case 193: return std::string("Automatische Raumluftklappe öffnet nicht");
+        case 194: return std::string("Luftzufuhr Fehlerhaft oder verschlossen");
+        case 195: return std::string("Sicherheitszeit wegen Minsensor im Saugzyklon abgelaufen.");
+        case 196: return std::string("Saugzugschalter nicht auf AUTO");
+        case 197: return std::string("Motorschutzschalter Schubboden hat angesprochen");
+        case 198: return std::string("Niveau für Hydrauliköl bei Schubboden zu niedrig");
+        case 199: return std::string("Temperatur des Hydrauliköls für den Schubboden zu hoch");
+        case 200: return std::string("Schlüsselschalter für Hydraulikraum nicht auf AUTO");
+        case 201: return std::string("Sicherheitsendschalter für Schubboden hat angesprochen");
+        case 202: return std::string("Wassertemperatur im Pelletsbrenner (F1) zu hoch");
+        case 203: return std::string("WOS Antrieb ist blockiert oder nicht angeschlossen");
+        case 204: return std::string("Luftdurchsatz zu gering oder Luftzufuhr fehlerhaft");
+        case 205: return std::string("Kesselüberprüfung im Vorbereiten fehlerhaft");
+        case 206: return std::string("Überfüllsicherung der ZRS hat angesprochen");
+        case 207: return std::string("Zellradschleuse nicht angesteckt oder funktioniert nicht");
+        case 208: return std::string("eingestellte Anzahl der Zwangszyklen am Schubboden überschritten");
+        case 209: return std::string("Kesselstandardwerte nicht gesetzt (Menü Einstellen --> Allg. Einst.)");
+        case 210: return std::string("Unterrostthermostat hat ausgelöst");
+        case 211: return std::string("Unterdruck im VORBEREITEN zu hoch");
+        case 212: return std::string("Rostantrieb meldet beide Endlagen aktiv");
+        case 213: return std::string("Austragung kontrollieren");
+        case 214: return std::string("Modul-Update fehlgeschlagen, bitte Pelletsmodul tauschen");
+        case 215: return std::string("Messbereitschaft konnte nicht hergestellt werden");
+        case 216: return std::string("Messbereitschaft konnte nicht aufrecht erhalten werden");
+        case 217: return std::string("Eingestellter Mindestbestand im Pelletlager unterschritten");
+        case 218: return std::string("Ungültige Parametrierung der Austragung");
+        case 219: return std::string("Lichtschranke dauerhaft belegt oder defekt");
+        case 220: return std::string("Temperaturüberschreitung am Wärmetauscher");
+        case 221: return std::string("Motorschutzschalter vom Rührwerk gefallen");
+        case 222: return std::string("FU Betriebssignal vom AGR-Gebläse abgefallen");
+        case 223: return std::string("Sicherheitsschalter E-Filter geöffnet");
+        case 224: return std::string("Fehler Wassersensor E-Filter");
+        case 225: return std::string("Übertemperatur HV-Box");
+        case 226: return std::string("Kommunikationsfehler E-Filter");
+        case 227: return std::string("HV-Fehler E-Filter");
+        case 228: return std::string("Betriebssignal vom Saugzug FU fehlerhaft");
+        case 229: return std::string("Störung der DBBK Pumpe");
+        case 230: return std::string("Motorschutzschalter Der Schnecke 1 auf LS gefallen");
+        case 231: return std::string("Motorschutzschalter Der Schnecke 2 auf LS gefallen");
+        case 232: return std::string("Displaymodul mit der Adresse 0 ist ausgefallen (DA 24)");
+        case 233: return std::string("Displaymodul mit der Adresse 1 ist ausgefallen (DA 25)");
+        case 234: return std::string("Displaymodul mit der Adresse 2 ist ausgefallen (DA 26)");
+        case 235: return std::string("Displaymodul mit der Adresse 3 ist ausgefallen (DA 27)");
+        case 236: return std::string("Displaymodul mit der Adresse 4 ist ausgefallen (DA 28)");
+        case 237: return std::string("Displaymodul mit der Adresse 5 ist ausgefallen (DA 29)");
+        case 238: return std::string("Displaymodul mit der Adresse 6 ist ausgefallen (DA 30)");
+        case 239: return std::string("Displaymodul mit der Adresse 7 ist ausgefallen (DA 31)");
+        case 240: return std::string("Displaymodul mit der Adresse 0 ist ausgefallen (DA 243)");
+        case 241: return std::string("Heizkreismodul mit der Adresse 0 ist ausgefallen (DA 32)");
+        case 242: return std::string("Heizkreismodul mit der Adresse 1 ist ausgefallen (DA 33)");
+        case 243: return std::string("Heizkreismodul mit der Adresse 2 ist ausgefallen (DA 34)");
+        case 244: return std::string("Heizkreismodul mit der Adresse 3 ist ausgefallen (DA 35)");
+        case 245: return std::string("Heizkreismodul mit der Adresse 4 ist ausgefallen (DA 36)");
+        case 246: return std::string("Heizkreismodul mit der Adresse 5 ist ausgefallen (DA 37)");
+        case 247: return std::string("Heizkreismodul mit der Adresse 6 ist ausgefallen (DA 38)");
+        case 248: return std::string("Heizkreismodul mit der Adresse 7 ist ausgefallen (DA 39)");
+        case 249: return std::string("Hydraulikmodul mit der Adresse 0 ist ausgefallen (DA 40)");
+        case 250: return std::string("Hydraulikmodul mit der Adresse 1 ist ausgefallen (DA 41)");
+        case 251: return std::string("Hydraulikmodul mit der Adresse 2 ist ausgefallen (DA 42)");
+        case 252: return std::string("Hydraulikmodul mit der Adresse 3 ist ausgefallen (DA 43)");
+        case 253: return std::string("Hydraulikmodul mit der Adresse 4 ist ausgefallen (DA 44)");
+        case 254: return std::string("Hydraulikmodul mit der Adresse 5 ist ausgefallen (DA 45)");
+        case 255: return std::string("Hydraulikmodul mit der Adresse 6 ist ausgefallen (DA 46)");
+        case 256: return std::string("Hydraulikmodul mit der Adresse 7 ist ausgefallen (DA 47)");
+        case 257: return std::string("Digitalmodul mit der Adresse 0 ist ausgefallen (DA 48)");
+        case 258: return std::string("Digitalmodul mit der Adresse 1 ist ausgefallen (DA 49)");
+        case 259: return std::string("Digitalmodul mit der Adresse 2 ist ausgefallen (DA 50)");
+        case 260: return std::string("Digitalmodul mit der Adresse 3 ist ausgefallen (DA 51)");
+        case 261: return std::string("Digitalmodul mit der Adresse 4 ist ausgefallen (DA 52)");
+        case 262: return std::string("Digitalmodul mit der Adresse 5 ist ausgefallen (DA 53)");
+        case 263: return std::string("Digitalmodul mit der Adresse 6 ist ausgefallen (DA 54)");
+        case 264: return std::string("Digitalmodul mit der Adresse 7 ist ausgefallen (DA 55)");
+        case 265: return std::string("Kaskadenmodul mit der Adresse 0 ist ausgefallen (DA 56)");
+        case 266: return std::string("Kaskadenmodul mit der Adresse 1 ist ausgefallen (DA 57)");
+        case 267: return std::string("Kaskadenmodul mit der Adresse 2 ist ausgefallen (DA 58)");
+        case 268: return std::string("Kaskadenmodul mit der Adresse 3 ist ausgefallen (DA 59)");
+        case 269: return std::string("Kaskadenmodul mit der Adresse 4 ist ausgefallen (DA 60)");
+        case 270: return std::string("Kaskadenmodul mit der Adresse 5 ist ausgefallen (DA 61)");
+        case 271: return std::string("Kaskadenmodul mit der Adresse 6 ist ausgefallen (DA 62)");
+        case 272: return std::string("Kaskadenmodul mit der Adresse 7 ist ausgefallen (DA 63)");
+        case 273: return std::string("Analogmodul mit der Adresse 0 ist ausgefallen (DA 64)");
+        case 274: return std::string("Analogmodul mit der Adresse 1 ist ausgefallen (DA 65)");
+        case 275: return std::string("Analogmodul mit der Adresse 2 ist ausgefallen (DA 66)");
+        case 276: return std::string("Analogmodul mit der Adresse 3 ist ausgefallen (DA 67)");
+        case 277: return std::string("Analogmodul mit der Adresse 4 ist ausgefallen (DA 68)");
+        case 278: return std::string("Analogmodul mit der Adresse 5 ist ausgefallen (DA 69)");
+        case 279: return std::string("Analogmodul mit der Adresse 6 ist ausgefallen (DA 70)");
+        case 280: return std::string("Analogmodul mit der Adresse 7 ist ausgefallen (DA 71)");
+        case 281: return std::string("Touch Display mit der Adresse 0 ist ausgefallen (DA 72)");
+        case 282: return std::string("Touch Display mit der Adresse 1 ist ausgefallen (DA 73)");
+        case 283: return std::string("Touch Display mit der Adresse 2 ist ausgefallen (DA 74)");
+        case 284: return std::string("Touch Display mit der Adresse 3 ist ausgefallen (DA 75)");
+        case 285: return std::string("Touch Display mit der Adresse 4 ist ausgefallen (DA 76)");
+        case 286: return std::string("Touch Display mit der Adresse 5 ist ausgefallen (DA 77)");
+        case 287: return std::string("Touch Display mit der Adresse 6 ist ausgefallen (DA 78)");
+        case 288: return std::string("Touch Display mit der Adresse 7 ist ausgefallen (DA 79)");
+        case 289: return std::string("Austragungsmodul mit der Adresse 0 ist ausgefallen (DA 80)");
+        case 290: return std::string("Austragungsmodul mit der Adresse 1 ist ausgefallen (DA 81)");
+        case 291: return std::string("Austragungsmodul mit der Adresse 2 ist ausgefallen (DA 82)");
+        case 292: return std::string("Austragungsmodul mit der Adresse 3 ist ausgefallen (DA 83)");
+        case 293: return std::string("Austragungsmodul mit der Adresse 4 ist ausgefallen (DA 84)");
+        case 294: return std::string("Austragungsmodul mit der Adresse 5 ist ausgefallen (DA 85)");
+        case 295: return std::string("Austragungsmodul mit der Adresse 6 ist ausgefallen (DA 86)");
+        case 296: return std::string("Austragungsmodul mit der Adresse 7 ist ausgefallen (DA 87)");
+        case 297: return std::string("Pelletsmodul mit der Adresse 0 ist ausgefallen (DA 240)");
+        case 298: return std::string("Hackgutmodul mit der Adresse 0 ist ausgefallen (DA 241)");
+        case 299: return std::string("Saugmodul mit der Adresse 0 ist ausgefallen (DA 242)");
+        case 300: return std::string("Breitband Sonden Modul 0 ist ausgefallen (DA 244)");
+        case 301: return std::string("Rücklaufmischermodul 0 ist ausgefallen (DA 245)");
+        case 302: return std::string("Fühler für Solarreferenz Puffer oben fehlerhaft");
+        case 303: return std::string("Fühler für Solarreferenz Puffer unten fehlerhaft");
+        case 304: return std::string("MIN Unterdruck im Feuerraum unterschritten");
+        case 305: return std::string("Motorschutzschalter der Saugschnecke vom Zyklon 1 gefallen");
+        case 306: return std::string("Motorschutzschalter der Saugschnecke vom Zyklon 2 gefallen");
+        case 307: return std::string("Zu oft Überstrom der Saugschnecke an Zyklon 1");
+        case 308: return std::string("Zu oft Überstrom der Saugschnecke an Zyklon 2");
+        case 309: return std::string("Schnecke 1 auf LS nicht angesteckt oder funktioniert nicht");
+        case 310: return std::string("Schnecke 2 auf LS nicht angesteckt oder funktioniert nicht");
+        case 311: return std::string("Saugschnecke von Zyklon 1 nicht angesteckt oder funktioniert nicht");
+        case 312: return std::string("Saugschnecke von Zyklon 2 nicht angesteckt oder funktioniert nicht");
+        case 313: return std::string("Rührwerk nicht angesteckt oder funktioniert nicht");
+        case 314: return std::string("Zu oft Überstrom der Schnecke 1 auf LS");
+        case 315: return std::string("Zu oft Überstrom der Schnecke 2 auf LS");
+        case 316: return std::string("Falsche oder fehlerhafte Kesselauswahl");
+        case 317: return std::string("Falsche oder fehlerhafte Brennstoffauswahl");
+        case 318: return std::string("Temperaturüberschreitung am Stokerrohr");
+        case 319: return std::string("Kombiantrieb blockiert");
+        case 320: return std::string("AGR-Aktivierungsklappe schließt nicht");
+        case 321: return std::string("HK1 - Vorlauf-Temperatur zu lange zu hoch");
+        case 322: return std::string("HK2 - Vorlauf-Temperatur zu lange zu hoch");
+        case 323: return std::string("HK3 - Vorlauf-Temperatur zu lange zu hoch");
+        case 324: return std::string("HK4 - Vorlauf-Temperatur zu lange zu hoch");
+        case 325: return std::string("HK5 - Vorlauf-Temperatur zu lange zu hoch");
+        case 326: return std::string("HK6 - Vorlauf-Temperatur zu lange zu hoch");
+        case 327: return std::string("HK7 - Vorlauf-Temperatur zu lange zu hoch");
+        case 328: return std::string("HK8 - Vorlauf-Temperatur zu lange zu hoch");
+        case 329: return std::string("HK9 - Vorlauf-Temperatur zu lange zu hoch");
+        case 330: return std::string("HK10 - Vorlauf-Temperatur zu lange zu hoch");
+        case 331: return std::string("HK11 - Vorlauf-Temperatur zu lange zu hoch");
+        case 332: return std::string("HK12 - Vorlauf-Temperatur zu lange zu hoch");
+        case 333: return std::string("HK13 - Vorlauf-Temperatur zu lange zu hoch");
+        case 334: return std::string("HK14 - Vorlauf-Temperatur zu lange zu hoch");
+        case 335: return std::string("HK15 - Vorlauf-Temperatur zu lange zu hoch");
+        case 336: return std::string("HK16 - Vorlauf-Temperatur zu lange zu hoch");
+        case 337: return std::string("HK17 - Vorlauf-Temperatur zu lange zu hoch");
+        case 338: return std::string("HK18 - Vorlauf-Temperatur zu lange zu hoch");
+        case 339: return std::string("Boiler Solarreferenz Fühler Fehlerhaft");
+        case 340: return std::string("AGR-Druckregelklappe blockiert");
+        case 341: return std::string("Druck im AGR-Druckkanal zu lange außerhalb des erlaubten Bereichs");
+        case 342: return std::string("Rost-Differenzdruck zu lange zu niedrig");
+        case 343: return std::string("Übertemperatur Durchbrandbogenkühlung");
+        case 344: return std::string("Ansteuerung des Saugers defekt, bitte Pelletsmodul tauschen");
+        case 345: return std::string("Kipprost 1 schließt nicht");
+        case 346: return std::string("Kipprost 1 öffnet nicht");
+        case 347: return std::string("Rostantrieb 1 meldet beide Endlagen aktiv");
+        case 348: return std::string("Kipprost 2 schließt nicht");
+        case 349: return std::string("Kipprost 2 öffnet nicht");
+        case 350: return std::string("Rostantrieb 2 meldet beide Endlagen aktiv");
+        case 351: return std::string("Temperaturanstieg am Fühler 1 ist zu gering");
+        case 352: return std::string("AGR-Primärluftklappe blockiert");
+        case 353: return std::string("AGR-Sekundärluftklappe blockiert");
+        case 354: return std::string("Raumfühler Heizkreis 1 fehlerhaft");
+        case 355: return std::string("Raumfühler Heizkreis 2 fehlerhaft");
+        case 356: return std::string("Raumfühler Heizkreis 3 fehlerhaft");
+        case 357: return std::string("Raumfühler Heizkreis 4 fehlerhaft");
+        case 358: return std::string("Raumfühler Heizkreis 5 fehlerhaft");
+        case 359: return std::string("Raumfühler Heizkreis 6 fehlerhaft");
+        case 360: return std::string("Raumfühler Heizkreis 7 fehlerhaft");
+        case 361: return std::string("Raumfühler Heizkreis 8 fehlerhaft");
+        case 362: return std::string("Raumfühler Heizkreis 9 fehlerhaft");
+        case 363: return std::string("Raumfühler Heizkreis 10 fehlerhaft");
+        case 364: return std::string("Raumfühler Heizkreis 11 fehlerhaft");
+        case 365: return std::string("Raumfühler Heizkreis 12 fehlerhaft");
+        case 366: return std::string("Raumfühler Heizkreis 13 fehlerhaft");
+        case 367: return std::string("Raumfühler Heizkreis 14 fehlerhaft");
+        case 368: return std::string("Raumfühler Heizkreis 15 fehlerhaft");
+        case 369: return std::string("Raumfühler Heizkreis 16 fehlerhaft");
+        case 370: return std::string("Raumfühler Heizkreis 17 fehlerhaft");
+        case 371: return std::string("Raumfühler Heizkreis 18 fehlerhaft");
+        case 372: return std::string("011 EEPROM Prüfsumme 2 falsch");
+        case 373: return std::string("STB, min. Druck, max. Druck oder Wassermangelsicherung ausgelöst.");
+        case 374: return std::string("AGR-Klappe blockiert");
+        case 375: return std::string("Rücklauftemperatur zu hoch");
+        case 376: return std::string("Kesseltür offen oder Unterdruckmessdose defekt");
+        case 377: return std::string("Saugzug dreht sich ohne Ansteuerung");
+        case 378: return std::string("Bitte den Kessel jetzt zur Vorbereitung für die Kaminkehrermessung anheizen!");
+        case 379: return std::string("Rücklauftemperatur zu lange über Kesseltemperatur");
+        case 380: return std::string("Ansaugöffnung kontrollieren");
+        case 381: return std::string("Kondensatabfluss kontrollieren");
+        case 382: return std::string("Unterdruck zu niedrig");
+        case 383: return std::string("Laufrichtung Absperrschieber kontrollieren.");
+        case 384: return std::string("Aschebehälter voll oder WOS blockiert - Noch 20h Heizbetrieb möglich");
+        case 385: return std::string("Stokerantrieb zieht Strom ohne Ansteuerung");
+        case 386: return std::string("Kesselüberprüfung im Vorbereiten fehlerhaft");
+        case 387: return std::string("Kipprost 3 schließt nicht");
+        case 388: return std::string("Kipprost 3 öffnet nicht");
+        case 389: return std::string("Rostantrieb 3 meldet beide Endlagen aktiv");
+        case 390: return std::string("Fühler Durchbrandbogen fehlerhaft");
+        case 391: return std::string("Fühler 2 im Puffer 1 fehlerhaft");
+        case 392: return std::string("Fühler 2 im Puffer 2 fehlerhaft");
+        case 393: return std::string("Fühler 2 im Puffer 3 fehlerhaft");
+        case 394: return std::string("Fühler 2 im Puffer 4 fehlerhaft");
+        case 395: return std::string("Rostmotor konnte Endlage nicht halten");
+        case 396: return std::string("Unterdruck im VORBEREITEN gering - Reinigungszustand des Kessels prüfen!");
+        case 397: return std::string("Unzulässiger Temperaturanstieg am Stoker");
+        case 398: return std::string("Motorschutz der Ascheschnecke gefallen.");
+        case 399: return std::string("Messbereitschaft konnte nicht hergestellt/aufrecht erhalten werden, Restsauerstoff nicht stabil");
+        case 400: return std::string("Messbereitschaft konnte nicht hergestellt/aufrecht erhalten werden, Abgastemperatur zu niedrig");
+        case 401: return std::string("Messbereitschaft konnte nicht hergestellt/aufrecht erhalten werden, Feuerraumtemp. zu gering");
+        case 402: return std::string("Messbereitschaft konnte nicht hergestellt/aufrecht erhalten werden, Leistungsabnahme zu gering");
+        case 403: return std::string("Messbereitschaft konnte nicht hergestellt/aufrecht erhalten werden, Abscheideleistung zu gering");
+        case 404: return std::string("Fühler 3 im Puffer 1 fehlerhaft");
+        case 405: return std::string("Fühler 3 im Puffer 2 fehlerhaft");
+        case 406: return std::string("Fühler 3 im Puffer 3 fehlerhaft");
+        case 407: return std::string("Fühler 3 im Puffer 4 fehlerhaft");
+        case 408: return std::string("Saugschnecke 1 nicht angesteckt oder funktioniert nicht");
+        case 409: return std::string("Saugschnecke 2 nicht angesteckt oder funktioniert nicht");
+        case 410: return std::string("Saugschnecke 3 nicht angesteckt oder funktioniert nicht");
+        case 411: return std::string("Zu oft Überstrom der Saugschnecke 1");
+        case 412: return std::string("Zu oft Überstrom der Saugschnecke 2");
+        case 413: return std::string("Zu oft Überstrom der Saugschnecke 3");
+        case 414: return std::string("Motorschutzschalter der Saugschnecke 1 gefallen");
+        case 415: return std::string("Motorschutzschalter der Saugschnecke 2 gefallen");
+        case 416: return std::string("Motorschutzschalter der Saugschnecke 3 gefallen");
+        case 417: return std::string("Ist ein Wärmequellenfüher vorhanden?");
+        case 418: return std::string("Drehzahlprüfung im Vorbereiten fehlgeschlagen");
+        case 419: return std::string("Unterdruck im Vorbereiten gering – Brenner reinigen!");
+        case 420: return std::string("Unterdruck im Vorbereiten zu gering");
+        case 421: return std::string("Zündversuch ist nicht gelungen. - ACHTUNG! Werden Maßnahmen nicht befolgt, kann eine gefährliche Situation eintreten - LEBENSGEFAHR!");
+        case 422: return std::string("Fühler in der STB Hülse fehlerhaft");
+        case 423: return std::string("Überdruck vor Zyklonabscheider erkannt");
+        case 424: return std::string("Kesseltemperaturfühler 2 fehlerhaft");
+        case 425: return std::string("Fühler 4 im Puffer 1 fehlerhaft");
+        case 426: return std::string("Fühler 5 im Puffer 1 fehlerhaft");
+        case 427: return std::string("Fühler 6 im Puffer 1 fehlerhaft");
+        case 428: return std::string("Fühler 7 im Puffer 1 fehlerhaft");
+        case 429: return std::string("Vorlauffühler für Wärmemengenerfassung des Kessels fehlerhaft");
+        default: return std::string("Unbekannter Fehlercode");
       }
       return x;

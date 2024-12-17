@@ -37,7 +37,7 @@ sensor:
     name: "${name} Saugzug - Ansteuerung"
     id: ${name}_Saugzug_Ansteuerung
     register_type: read
-    address: 13
+    address: 12
     unit_of_measurement: "%"
     value_type: U_WORD
 
@@ -98,7 +98,7 @@ sensor:
     name: "${name} Sekundärluft"
     id: ${name}_Sekundaerluft
     register_type: read
-    address: 12
+    address: 13
     unit_of_measurement: "%"
     value_type: U_WORD
 
